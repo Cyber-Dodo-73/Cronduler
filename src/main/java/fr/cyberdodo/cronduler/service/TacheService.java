@@ -9,13 +9,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class TacheService {
-    private final TacheRepository repo;
 
-    public Tache create(Tache t) {
+    private final TacheRepository repo;
+    private final GroupeTacheService groupeService;
+
+    public Tache create(Tache t, Long groupeId) {
+        // Charge le GroupeTache existant
+        var groupe = groupeService.get(groupeId);
+        t.setGroupe(groupe);
         return repo.save(t);
     }
 
@@ -32,15 +39,16 @@ public class TacheService {
         return repo.findByActifTrue();
     }
 
-    public Tache update(Long id, Tache t) {
-        Tache ex = get(id);
-        ex.setNom(t.getNom());
-        ex.setDescription(t.getDescription());
-        ex.setCronExpression(t.getCronExpression());
-        ex.setOrdre(t.getOrdre());
-        ex.setActif(t.getActif());
-        ex.setGroupe(t.getGroupe());
-        return repo.save(ex);
+    public Tache update(Long id, Tache t, Long groupeId) {
+        var existing = get(id);
+        var groupe = groupeService.get(groupeId);
+        existing.setNom(t.getNom());
+        existing.setDescription(t.getDescription());
+        existing.setCronExpression(t.getCronExpression());
+        existing.setOrdre(t.getOrdre());
+        existing.setActif(t.getActif());
+        existing.setGroupe(groupe);
+        return repo.save(existing);
     }
 
     public void delete(Long id) {

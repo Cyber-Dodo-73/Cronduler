@@ -3,9 +3,9 @@ package fr.cyberdodo.cronduler.service;
 import fr.cyberdodo.cronduler.entity.GroupeTache;
 import fr.cyberdodo.cronduler.exception.ResourceNotFoundException;
 import fr.cyberdodo.cronduler.repository.GroupeTacheRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,9 +13,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class GroupeTacheService {
-    private final GroupeTacheRepository repo;
 
-    public GroupeTache create(GroupeTache g) {
+    private final GroupeTacheRepository repo;
+    private final ProductionService productionService;
+
+    public GroupeTache create(GroupeTache g, Long productionId) {
+        // Charge la Production existante
+        var prod = productionService.get(productionId);
+        g.setProduction(prod);
         return repo.save(g);
     }
 
@@ -28,13 +33,14 @@ public class GroupeTacheService {
         return repo.findAll();
     }
 
-    public GroupeTache update(Long id, GroupeTache g) {
-        GroupeTache ex = get(id);
-        ex.setNom(g.getNom());
-        ex.setPriorite(g.getPriorite());
-        ex.setConcurrent(g.getConcurrent());
-        ex.setProduction(g.getProduction());
-        return repo.save(ex);
+    public GroupeTache update(Long id, GroupeTache g, Long productionId) {
+        var existing = get(id);
+        var prod = productionService.get(productionId);
+        existing.setNom(g.getNom());
+        existing.setPriorite(g.getPriorite());
+        existing.setConcurrent(g.getConcurrent());
+        existing.setProduction(prod);
+        return repo.save(existing);
     }
 
     public void delete(Long id) {

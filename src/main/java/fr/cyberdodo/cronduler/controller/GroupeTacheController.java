@@ -15,12 +15,16 @@ import java.util.List;
 @RequestMapping("/api/groupes")
 @RequiredArgsConstructor
 public class GroupeTacheController {
+
     private final GroupeTacheService service;
     private final GroupeTacheMapper mapper;
 
     @GetMapping
     public List<GroupeTacheDto> all() {
-        return service.list().stream().map(mapper::toDto).toList();
+        return service.list()
+                .stream()
+                .map(mapper::toDto)
+                .toList();
     }
 
     @GetMapping("/{id}")
@@ -30,13 +34,18 @@ public class GroupeTacheController {
 
     @PostMapping
     public ResponseEntity<GroupeTacheDto> create(@Valid @RequestBody GroupeTacheDto dto) {
-        GroupeTache g = service.create(mapper.toEntity(dto));
-        return ResponseEntity.status(201).body(mapper.toDto(g));
+        GroupeTache entity = mapper.toEntity(dto);
+        GroupeTache saved = service.create(entity, dto.getProductionId());
+        return ResponseEntity.status(201).body(mapper.toDto(saved));
     }
 
     @PutMapping("/{id}")
-    public GroupeTacheDto update(@PathVariable Long id, @Valid @RequestBody GroupeTacheDto dto) {
-        return mapper.toDto(service.update(id, mapper.toEntity(dto)));
+    public GroupeTacheDto update(
+            @PathVariable Long id,
+            @Valid @RequestBody GroupeTacheDto dto) {
+        GroupeTache entity = mapper.toEntity(dto);
+        GroupeTache updated = service.update(id, entity, dto.getProductionId());
+        return mapper.toDto(updated);
     }
 
     @DeleteMapping("/{id}")
